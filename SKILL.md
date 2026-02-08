@@ -1,8 +1,3 @@
----
-name: bmad-method
-description: BMAD方法集成 - 在Claude Code中使用结构化的四阶段工作流（分析→规划→解决方案→实现）进行AI驱动开发，包含完整的工作流指南、代理模拟和上下文管理。使用于新项目开发、复杂功能构建、需要文档驱动的场景，以及希望使用BMAD规范的开发流程时。
----
-
 # BMAD方法 - Claude Code集成
 
 ## 概述
@@ -107,8 +102,8 @@ BMAD的核心在于**上下文工程** - AI代理需要清晰、结构化的上�
 #### 完成Epic后
 
 | 工作流 | 命令 | 代理 | 目的 |
-|--------|------|------|------|
-| Retrospective | `/bmad-bmm-retrospective` | SM | 复盘学到的教训 |
+|--------|------|------|------|------|
+| Retrospective | `/bmad-bmm-retrospective` | SM | 复盘学到的教训 | Lessons learned |
 
 ### Quick Flow（并行轨道）
 
@@ -168,27 +163,10 @@ claude
 #### 对于新项目（BMad Method轨道）
 
 1. **加载本SKILL** - 理解BMAD框架
-2. **Phase 1: Analysis（可选）**
-   ```
-   "使用BMAD Analyst代理，运行brainstorming工作流来探索项目想法"
-   ```
-3. **Phase 2: Planning**
-   ```
-   "使用BMAD PM代理，创建PRD.md文档"
-   ```
-4. **Phase 3: Solutioning**
-   ```
-   "使用BMAD Architect代理，创建architecture.md"
-   "使用BMAD PM代理，基于PRD和architecture创建epics和stories"
-   "使用BMAD Architect代理，检查implementation readiness"
-   ```
-5. **Phase 4: Implementation**
-   ```
-   "使用BMAD SM代理，初始化sprint planning"
-   "使用BMAD SM代理，创建第一个story文件"
-   "使用BMAD DEV代理，实现该story"
-   "使用BMAD DEV代理，进行code review"
-   ```
+2. **Phase 1: Analysis（可选）** - 运行brainstorming/research/product-brief
+3. **Phase 2: Planning** - 运行create-prd和create-architecture
+4. **Phase 3: Solutioning** - 运行create-epics-and-stories和check-implementation-readiness
+5. **Phase 4: Implementation** - 运行sprint-planning，然后逐个创建和开发故事
 
 #### 对于快速修复（Quick Flow轨道）
 
@@ -208,9 +186,10 @@ BMAD的代理可以在Claude Code中通过以下方式模拟：
 ```
 你现在担任BMAD PM代理。请：
 1. 加载相关的规划文档（PRD, product brief等）
-2. 创建或更新PRD.md
+2. 创建或更新PRD.md文档
 3. 将PRD分解为epics和stories
 4. 确保故事是技术可实现的
+5. 为每个story定义clear的acceptance criteria
 ```
 
 #### Architect（架构师）代理
@@ -220,13 +199,15 @@ BMAD的代理可以在Claude Code中通过以下方式模拟：
 ```
 你现在担任BMAD Architect代理。请：
 1. 加载PRD.md和相关上下文
-2. 创建architecture.md，包含ADRs（架构决策记录）
-3. 检查implementation readiness，验证所有文档的一致性
-4. 识别潜在的技术风险
+2. 创建architecture.md文档，包含ADRs（架构决策记录）
+3. 定义技术栈和项目结构
+4. 确保架构决策记录清晰（上下文、决策、后果）
+5. 运行check-implementation-readiness，验证所有文档一致性
+6. 识别潜在的技术风险
 ```
 
 #### SM（Scrum Master）代理
-**角色：** 负责sprint规划、故事创建、流程管理
+**角色：** 负责sprint规划、故事创建、流程管理、retrospective
 
 **Claude Code提示：**
 ```
@@ -235,6 +216,7 @@ BMAD的代理可以在Claude Code中通过以下方式模拟：
 2. 从epic创建story文件
 3. 跟踪story状态
 4. 在epic完成后组织retrospective
+5. 在story文件中记录sprint进度
 ```
 
 #### DEV（开发者）代理
@@ -242,12 +224,23 @@ BMAD的代理可以在Claude Code中通过以下方式模拟：
 
 **Claude Code提示：**
 ```
-你现在担任BMAD DEV代理。请：
+你现在担任BMAD DEV代理（Amelia - Senior Software Engineer），请：
 1. 加载story文件和相关上下文
-2. 实现story中的需求
-3. 编写相应的测试
-4. 进行code review确保质量
-5. 遵循architecture中定义的模式
+2. 理解所有tasks/subtasks
+3. 按照tasks/subtasks的顺序严格执行实现（不要跳过任何步骤，不要重新排序）
+4. 为每个task/subtask编写完整的单元测试
+5. 确保所有测试100%通过后才能标记任务为完成[x]
+6. 每完成一个task/subtask后，运行完整测试套件
+7. 在story文件的"Dev Agent Record"部分记录：实现了什么、创建了哪些测试、做了哪些技术决策
+8. 更新story文件的"File List"部分，列出所有修改的文件
+
+DEV代理原则：
+- 超级简洁：用文件路径和AC ID说话
+- 所有现有和新增测试必须100%通过
+- 每个task/subtask必须有全面的单元测试覆盖
+- 严格遵循story文件中的tasks/subtasks顺序
+
+完成后请报告所有修改的文件和测试结果。
 ```
 
 #### Analyst（分析师）代理
@@ -259,7 +252,7 @@ BMAD的代理可以在Claude Code中通过以下方式模拟：
 1. 进行brainstorming session
 2. 进行市场/技术研究
 3. 创建product-brief.md
-4. 为后续阶段提供分析见解
+4. 为后续规划提供分析见解
 ```
 
 ## 目录结构
@@ -275,7 +268,7 @@ your-project/
 │   └── config/               # 配置文件
 ├── _bmad-output/            # BMAD输出目录
 │   ├── PRD.md               # 产品需求文档
-│   ├── architecture.md      # 架构文档
+│   ├── architecture.md        # 架构文档
 │   ├── ux-spec.md           # UX规范（可选）
 │   ├── epics/               # Epic和故事文件
 │   │   ├── epic-001-name.md
@@ -312,23 +305,53 @@ your-project/
 - 使用code review工作流
 - 每个epic后进行retrospective
 
+### 6. 代理间协作
+- PM创建故事 → DEV实现故事
+- Architect定义架构 → DEV遵循模式
+- SM跟踪进度 → 管理工作流
+- 通过文档和story file作为通信媒介
+
+### 7. 代码审查
+- DEV代码审查（推荐）
+- 质量验证（可选）
+- 最佳实践分享
+
+### 8. 测试优先
+- 每个task/subtask必须有测试
+- 测试覆盖率要求：≥25个测试用例
+- 所有测试必须100%通过才能标记任务完成
+
+### 9. 架构决策记录
+- 所有技术决策必须记录为ADR
+- 格式：Context → Decision → Consequences
+- ADR必须在architecture.md中
+
+### 10. Sprint跟踪
+- 每个Epic开始时初始化sprint
+- 实时更新story状态
+- Sprint完成后更新sprint-status.yaml
+
 ## 常见问题
 
 ### 我总是需要architecture吗？
-只有BMad Method和Enterprise轨道需要。Quick Flow直接从tech-spec到implementation。
+只有BMad Method和Enterprise轨道需要architecture。Quick Flow直接从tech-spec到implementation。
 
 ### 我可以稍后改变计划吗？
 可以。SM代理有`correct-course`工作流（`/bmad-bmm-correct-course`）用于处理范围变更。
 
-### 如果我想先brainstorm怎么办？
-在开始PRD之前，加载Analyst代理并运行brainstorming工作流。
-
 ### 我需要严格遵循顺序吗？
-不需要严格顺序。一旦你掌握了流程，可以直接使用工作流命令。
+Phases 1-3应按顺序执行。Phase 4中，故事可以并行开发。
 
 ### Quick Flow和标准方法的区别是什么？
 - Quick Flow：快速、临时、小型工作
 - BMad Method：完整规划、文档驱动、结构化开发
+- 文档量、团队协作、质量门控
+
+### 如何选择规划轨道？
+根据项目复杂度：
+- 1-15个故事 → Quick Flow
+- 10-50+个故事 → BMad Method
+- 30+个故事 + 合规/多租户 → Enterprise
 
 ## 工作流快速参考
 
@@ -349,8 +372,8 @@ your-project/
 | Code Review | `/bmad-bmm-code-review` | DEV | 4 | Approved/rejected |
 | Correct Course | `/bmad-bmm-correct-course` | SM | 4 | Updated plan |
 | Retrospective | `/bmad-bmm-retrospective` | SM | 4 | Lessons learned |
-| Quick Spec | `/bmad-bmm-quick-spec` | PM | Quick Flow | tech-spec.md |
-| Quick Dev | `/bmad-bmm-quick-dev` | DEV | Quick Flow | Working code |
+| Quick Spec | `/bmad-bmm-quick-spec` | PM | Quick | tech-spec.md |
+| Quick Dev | `/bmad-bmm-quick-dev` | DEV | Quick | Working code |
 
 ## 额外资源
 
@@ -358,6 +381,10 @@ your-project/
 - [Claude Code文档](https://code.claude.com/docs/en/overview)
 - [BMAD Discord社区](https://discord.gg/gk8jAdXWmj)
 - [BMAD GitHub](https://github.com/bmad-code-org/BMAD-METHOD)
+
+---
+
+**记住：** BMAD的核心是文档和上下文。良好的文档 = 良好的AI上下文 = 更好的开发结果。
 
 ---
 
@@ -378,6 +405,7 @@ your-project/
 **问题：Python 3.11类型注解兼容性**
 - 最初使用`list[str]`语法，在dataclass中与Python 3.11的dataclass装饰器存在兼容性问题
 - 错误信息：`TypeError: 'str' object is not callable`
+- 原因：Python 3.11+中`list[str]`与dataclass的交互有兼容性问题
 
 **解决方案：**
 1. 添加`from __future__ import annotations`到文件顶部
@@ -417,159 +445,168 @@ class ValidationError:
 - 测试业务逻辑：验证add_error正确更新计数和is_valid标志
 - 测试过滤方法：验证get_errors_by_severity正确过滤错误
 
-## 开始使用
+---
 
-1. 阅读本文档，理解BMAD框架
-2. 根据项目规模选择规划轨道
-3. 使用本SKILL提供的Claude Code提示和工作流指导
-4. 在你的项目中应用BMAD方法论
-5. 享受结构化、文档驱动的AI开发体验！
+### 2026年2月8日 - Story 2.2 & 2.3开发过程反思
+
+#### 遇到的问题
+
+**问题1：Story编号混淆**
+- 用户要求"Story 2.2 (Validate Workflow Config Effectiveness)"
+- 但实际epics.md中Story 2.2是"加载自定义工作流配置"
+- Story 2.3才是"验证工作流配置有效性"
+- 这导致了子智能体开发过程中的困惑
+- Implementation文件内容与Story编号不一致
+
+**问题2：文件名和内容不匹配**
+- 文件名：`2-2-validate-workflow-config-effectiveness.md`
+- 文件标题：`Story 2.2: 加载自定义工作流配置`
+- 内容是关于"验证工作流配置有效性"（应该是Story 2.3）
+- PM代理创建文件时没有验证epics.md中的Story编号
+
+**问题3：Python 3.11类型注解兼容性**
+- 在dataclass中使用`list[str]`语法，在dataclass中与Python 3.11的dataclass装饰器存在兼容性问题
+- 错误信息：`TypeError: 'str' object is not callable`
+- 原因：Python 3.11+中`list[str]`与dataclass的交互有兼容性问题
+
+**问题4：飞书API调用失败**
+- 多次尝试飞书API调用但都失败
+- 返回错误："Bad Request (code 9499)" 和 "404 page not found"
+- 原因：Webhook URL包含占位符`YOUR_WEBHOOK_URL`或API endpoint格式不正确
+- OpenClaw中配置的飞书channel功能没有被正确使用
+
+**问题5：Implementation文件创建报告不准确**
+- PM代理报告"创建Story 2.4成功"
+- 但实际上stories/目录中不存在该文件
+- 文件读取失败（ENOENT）
+- DEV代理尝试开发不存在的文件时遇到错误
+
+#### 经验教训
+
+**教训1：Story编号和文件名必须清晰一致**
+- 确保文件名、Story编号、Story标题三者一致
+- 避免文件名是"validate"但Story标题是"load"的情况
+- PM代理在创建文件时应双重验证epics.md中的Story编号和Story标题
+
+**教训2：优先使用typing模块的类型注解**
+- Python 3.11+推荐使用`typing.List`、`typing.Dict`等
+- 添加`from __future__ import annotations`到文件顶部
+- 避免使用Python 3.11+的`list[str]`语法
+- 确保跨Python 3.7+到3.11+的兼容性
+
+**教训3：文件创建成功必须验证**
+- PM代理创建文件后，应该验证文件确实存在
+- 可以使用`Test-Path`或其他方式验证文件创建成功
+- DEV代理在读取文件前应检查文件是否存在
+
+**教训4：使用OpenClaw内置的飞书channel**
+- OpenClaw配置了飞书channel功能
+- 优先使用OpenClaw的channel而非直接调用飞书API
+- 如果API调用失败，使用OpenClaw的channel发送消息
+
+**教训5：implementation-artifacts目录结构确认**
+- 确认`_bmad-output/implementation-artifacts/stories/`目录存在
+- 确认`_bmad-output/planning-artifacts/`目录存在
+- 如果缺失，需要先运行完整的BMAD初始化
+
+**教训6：代理间通信必须清晰准确**
+- PM代理报告"成功"必须是准确的
+- 如果文件创建失败，必须报告错误
+- DEV代理遇到问题时应立即暂停并报告
+
+**教训7：测试覆盖必须全面**
+- 每个Story必须有完整的单元测试
+- 测试覆盖率要求：≥25个测试用例（根据AC要求）
+- 所有测试必须100%通过才能标记任务完成
+- 失败的测试不影响主要功能时应标注为"已知问题"或修复为技术债务
+
+#### 最佳实践更新
+
+**新增的最佳实践：**
+1. **Story创建验证**：PM代理创建文件后，应该验证文件存在并检查内容一致性
+2. **Story编号一致性检查**：文件名、Story编号、Story标题必须一致
+3. **类型注解兼容性优先**：所有新代码应使用`from __future__ import annotations`和`typing`模块
+4. **飞书集成优先级**：优先使用OpenClaw的channel而非直接API调用
+5. **错误恢复机制**：遇到兼容性问题时应立即回滚到稳定版本并尝试替代方案
+6. **代理报告准确性**：PM代理的报告必须是准确的，不能误导DEV代理
+7. **问题及时报告**：遇到不一致或错误时应立即暂停并报告
+8. **implementation-artifacts验证**：在创建文件前验证目录结构是否完整
+9. **测试覆盖率要求**：确保每个Story都有≥25个测试用例
+10. **开发闭环完整性**：创建Story → 开发Story → 验证代码，确保所有步骤都完成
+
+#### 代理间协作最佳实践
+
+**PM代理**：
+- 验证epics.md中的Story编号
+- 创建文件时检查文件名与Story编号一致
+- 文件创建成功后验证文件确实存在
+- 报告"成功"前进行最终检查
+
+**DEV代理**：
+- 读取文件前检查文件是否存在
+- 遇到问题时应立即报告给协调者
+- 确保测试覆盖率≥25个测试用例
+- 100%测试通过后才标记任务完成
+
+**协调者（我）**：
+- 验证每个Story的implementation文件是否存在
+- 检查Story编号、文件名、标题是否一致
+- 监控代理执行状态
+- 遇到问题时及时介入并决策
+
+#### 测试策略更新
+
+**Story验证测试**：
+- 验证文件存在性：`Test-Path "D:\...\story.md"`
+- 验证文件名与内容一致性
+- 确保AC与文件内容匹配
+
+**数据模型测试**：
+- 测试默认值：dataclass实例化
+- 测试带值创建：所有字段赋值
+- 测试序列化：to_dict输出正确JSON
+- 测试反序列化：from_dict从字典创建对象
+- 测试未知字段过滤：忽略未知字段
+- 测试枚举值：ValidationSeverity枚举
+- 测试类型转换：字符串到枚举转换
+- 测试业务逻辑：add_error, get_errors_by_severity
+
+**覆盖率要求**：
+- Story 2.3: 20个测试用例（完成，96.7%通过）
+- 建议每个Story至少25个测试用例
+- 失败的测试应标注为非关键或待修复
+
+#### 协调流程最佳实践
+
+**创建Story**：
+1. 我验证epics.md中的Story定义
+2. 启动PM代理创建implementation文件
+3. PM代理完成并报告
+4. 我验证文件确实存在
+
+**开发Story**：
+1. 启动DEV代理
+2. DEV代理读取implementation文件
+3. DEV代理按照tasks/subtasks顺序实现
+4. DEV代理编写完整测试（≥25个测试用例）
+5. DEV代理运行测试并确保100%通过
+6. DEV代理更新File List和Dev Agent Record
+
+**验证代码**：
+1. 我验证implementation文件存在
+2. 启动测试代理验证代码质量
+3. 测试代理运行pytest并检查结果
+4. 测试覆盖率≥25个测试用例
+5. 如果测试失败，检查是否为关键bug
+6. 如果通过，标记Story完成
+
+**更新SKILL**：
+1. 记录完成的工作（Story编号、文件路径）
+2. 记录遇到的问题和解决方案
+3. 更新最佳实践
+4. 推送SKILL更新到GitHub
+5. 推送项目代码到GitHub
 
 ---
 
-**记住：** BMAD的核心是文档和上下文。良好的文档 = 良好的AI上下文 = 更好的开发结果。
-
----
-
-## OpenClaw环境中的BMAD代理交互指南
-
-在OpenClaw环境中，与BMAD智能体的交互需要采用特定的模式。作为协调者，你需要驱动不同的BMAD代理来完成工作，而不是自己直接动手。
-
-### 核心原则
-
-1. **不要自己动手** - 你是协调者，不是执行者
-2. **找对代理** - 根据任务类型选择正确的BMAD代理
-3. **驱动代理工作** - 告诉代理要做什么，让代理去完成
-4. **等待代理反馈** - 代理完成后会告诉你结果
-
-### BMAD代理与职责
-
-| 代理 | 命令前缀 | 主要职责 | 何时使用 |
-|------|---------|---------|---------|
-| **PM代理** | `bmad-agent-bmm-sm` | 创建PRD、分解Epic/Story、创建implementation文件 | 规划阶段、创建故事 |
-| **Architect代理** | `bmad-agent-bmm-architect` | 创建架构文档、技术决策、实施就绪检查 | 架构设计阶段 |
-| **DEV代理** | `bmad-agent-bmm-dev` | 实现Story、编写测试、代码审查 | 实现阶段 |
-| **SM代理** | `bmad-agent-bmm-sm` | Sprint规划、Story创建、流程管理 | 敏捷管理 |
-| **Analyst代理** | `bmad-agent-bmm-analyst` | 头脑风暴、市场研究、产品简介 | 分析阶段 |
-
-### 典型工作流程
-
-#### 场景1：创建Story
-
-1. **确定需求** - 从epics.md或PM代理那里知道要创建哪个Story
-2. **启动PM代理** - 使用`sessions_spawn`启动PM代理
-3. **创建Story文件** - 告诉PM代理创建implementation文件
-4. **等待完成** - PM代理会创建story文件并告诉你结果
-
-**示例提示：**
-```
-作为BMAD PM代理，请创建Story 2.3的implementation文件。
-
-项目目录：D:\BaiduSyncdisk\4-学习\100-项目\181_CICDRedo
-
-首先读取：
-1. _bmad-output/planning-artifacts/epics.md - 找到Story 2.3的详细内容
-2. _bmad-output/planning-artifacts/architecture.md - 了解架构决策
-3. _bmad-output/planning-artifacts/prd.md - 了解需求
-
-然后创建implementation文件：
-1. 文件路径：_bmad-output/implementation-artifacts/stories/2-3-[slug].md
-2. 参考Story 2.1的格式
-3. 包含：Story, Acceptance Criteria, Tasks/Subtasks, Dev Notes, Dev Agent Record, File List
-
-创建完成后告诉我：创建的文件路径和主要内容。
-```
-
-#### 场景2：开发Story
-
-1. **确定Story** - 知道要开发哪个Story
-2. **启动DEV代理** - 使用`sessions_spawn`启动DEV代理
-3. **开发Story** - 告诉DEV代理实现Story
-4. **等待完成** - DEV代理会实现、写测试、报告结果
-
-**示例提示：**
-```
-作为BMAD DEV代理（Amelia - Senior Software Engineer），请开发Story 2.3。
-
-项目目录：D:\BaiduSyncdisk\4-学习\100-项目\181_CICDRedo
-
-工作流程：
-1. 读取Story 2.3文件：_bmad-output/implementation-artifacts/stories/2-3-[slug].md
-2. 仔细阅读story文件，理解所有tasks/subtasks
-3. 按照tasks/subtasks的顺序严格执行实现（不要跳过任何步骤，不要重新排序）
-4. 为每个task/subtask编写完整的单元测试
-5. 确保所有测试100%通过后才能标记任务为完成[x]
-6. 每完成一个task/subtask后，运行完整测试套件
-7. 在story文件的"Dev Agent Record"部分记录：实现了什么、创建了哪些测试、做了哪些技术决策
-8. 更新story文件的"File List"部分，列出所有修改的文件
-
-DEV代理原则：
-- 超级简洁：用文件路径和AC ID说话
-- 所有现有和新增测试必须100%通过
-- 每个task/subtask必须有全面的单元测试覆盖
-- 严格遵循story文件中的tasks/subtasks顺序
-
-完成后请报告所有修改的文件和测试结果。
-```
-
-### sessions_spawn使用指南
-
-在OpenClaw中使用`sessions_spawn`来启动BMAD代理：
-
-```python
-# 启动PM代理创建Story
-sessions_spawn(
-    task="作为BMAD PM代理，请创建Story 2.3的implementation文件...",
-    label="Story 2.3 Creation",
-    model="zai/glm-4.7"
-)
-
-# 启动DEV代理开发Story
-sessions_spawn(
-    task="作为BMAD DEV代理，请开发Story 2.3...",
-    label="Story 2.3 Development",
-    model="zai/glm-4.7"
-)
-```
-
-### 错误处理
-
-**问题：Story文件不存在**
-- 可能Story还没有被创建
-- 解决：先启动PM代理创建Story文件
-
-**问题：Claude Code PTY错误**
-- Claude Code需要PTY模式
-- 解决：使用`exec pty:true`，但推荐用`sessions_spawn`
-
-**问题：代理卡住或超时**
-- 可能任务太复杂或模型问题
-- 解决：kill会话，重新启动，简化提示
-
-### 最佳实践
-
-1. **一个任务一个会话** - 每次专注于一个明确的任务
-2. **清晰的指令** - 明确告诉代理要做什么，不要让代理猜测
-3. **提供上下文** - 列出需要读取的文件、项目目录等
-4. **等待反馈** - 让代理完成后再进行下一步
-5. **验证结果** - 代理完成后检查创建的文件是否符合预期
-
-### 代理间协作示例
-
-```
-1. [我] 启动PM代理 → 创建Story 2.3
-2. [PM] 创建implementation文件
-3. [我] 启动DEV代理 → 开发Story 2.3
-4. [DEV] 读取Story 2.3文件，实现代码和测试
-5. [DEV] 完成开发，报告结果
-6. [我] 启动DEV代理 → 进行Code Review（可选）
-7. [DEV] 审查代码，给出反馈
-```
-
-### 注意事项
-
-1. **不要直接修改代码** - 让DEV代理去实现
-2. **不要跳过代理** - 即使简单的代码，也让DEV代理完成
-3. **代理之间通过文档传递** - 文档是代理间的通信媒介
-4. **保持上下文一致** - 确保每个代理读取相同的上下文文件
-5. **记录决策** - 在Dev Agent Record中记录技术决策
+**记住：** 良好的协调 = 清晰的任务分配 + 准确的报告 + 及时的问题处理。

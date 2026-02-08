@@ -359,6 +359,64 @@ your-project/
 - [BMAD Discord社区](https://discord.gg/gk8jAdXWmj)
 - [BMAD GitHub](https://github.com/bmad-code-org/BMAD-METHOD)
 
+---
+
+## 开发经验与技巧总结
+
+### 2026年2月8日 - Story 2.3（验证工作流配置有效性）
+
+#### 完成的任务
+- ✅ 创建ValidationSeverity枚举（ERROR, WARNING, INFO）
+- ✅ 创建ValidationError dataclass（field, message, severity, suggestions, stage）
+- ✅ 创建ValidationResult dataclass（is_valid, errors, warning_count, error_count）
+- ✅ 实现to_dict和from_dict序列化/反序列化方法
+- ✅ 实现add_error方法用于添加验证错误
+- ✅ 实现get_errors_by_severity方法用于按严重级别过滤错误
+- ✅ 创建完整的单元测试（20个测试用例，全部通过）
+
+#### 遇到的问题
+**问题：Python 3.11类型注解兼容性**
+- 最初使用`list[str]`语法，在dataclass中与Python 3.11的dataclass装饰器存在兼容性问题
+- 错误信息：`TypeError: 'str' object is not callable`
+
+**解决方案：**
+1. 添加`from __future__ import annotations`到文件顶部
+2. 使用`typing.List`替代Python 3.11+的`list[str]`语法
+3. 确保所有类型注解使用typing模块的类型
+
+**关键代码变更：**
+```python
+from __future__ import annotations  # 必须在第一行
+from typing import List  # 使用typing.List替代list[str]
+
+@dataclass
+class ValidationError:
+    suggestions: List[str] = field(default_factory=list)  # 使用typing.List
+```
+
+#### 技术决策
+1. **使用typing模块的类型注解** - 为了跨Python版本的兼容性
+2. **dataclass字段使用field(default_factory=list)** - 避免可变默认值陷阱
+3. **实现完整的序列化方法** - to_dict和from_dict支持嵌套对象
+4. **错误严重级别使用枚举** - 更类型安全和可扩展
+
+#### 最佳实践
+1. **类型注解优先使用typing模块** - `typing.List`, `typing.Dict`, `typing.Optional`等
+2. **添加`from __future__ import annotations`** - 确保类型注解作为字符串延迟求值
+3. **测试覆盖全面性** - 测试默认值、带值创建、序列化、反序列化、错误过滤等所有场景
+4. **使用枚举表示固定值集合** - 比字符串常量更类型安全
+5. **避免内置类型覆盖** - 确保不使用list、dict等作为变量名
+
+#### 测试策略
+- 测试默认值：确保dataclass实例化时有正确的默认值
+- 测试带值创建：验证所有字段都能正确赋值
+- 测试序列化：验证to_dict输出正确的JSON结构
+- 测试反序列化：验证from_dict能从字典正确创建对象
+- 测试未知字段过滤：验证from_dict时忽略未知字段
+- 测试类型转换：验证字符串到枚举的转换
+- 测试业务逻辑：验证add_error正确更新计数和is_valid标志
+- 测试过滤方法：验证get_errors_by_severity正确过滤错误
+
 ## 开始使用
 
 1. 阅读本文档，理解BMAD框架

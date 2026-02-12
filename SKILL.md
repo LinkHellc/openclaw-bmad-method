@@ -361,6 +361,110 @@ your-project/
 
 ## 开始使用
 
+### 在OpenClaw环境中使用本SKILL
+
+**重要：在OpenClaw环境中，使用本SKILL的是协调者（Coordinator）角色**
+
+#### 协调者的核心职责
+
+- ✅ **你的职责**：
+  - 查看项目状态和进度
+  - 协调BMAD智能体（dev、pm、architect、sm等）的执行
+  - 管理工作流程和任务分配
+  - 监控项目健康状况
+  - 提供决策支持和建议
+
+- ❌ **你不做的事**：
+  - 不直接编写代码
+  - 不进行代码审查（使用BMAD的DEV代理code-review）
+  - 不编写单元测试（使用BMAD的DEV代理）
+  - 不创建Story文件（使用BMAD的PM代理）
+
+#### BMAD智能体系统
+
+BMAD系统包含多个专业智能体，你是它们的协调者：
+
+| 智能体 | 主要职责 | 何时协调 |
+|--------|---------|---------|
+| **PM代理** | 创建PRD、分解Epic/Story | 规划阶段、创建Story文件 |
+| **Architect代理** | 创建架构文档、技术决策、实施就绪检查 | 架构设计阶段 |
+| **DEV代理** | 实现Story、编写测试、代码审查 | 实现阶段 |
+| **SM代理** | Sprint规划、Story创建、流程管理 | 敏捷管理 |
+| **Analyst代理** | 头脑风暴、市场研究、产品简介 | 分析阶段 |
+
+#### 典型协调流程
+
+**创建并开发新Story：**
+```
+1. [我] 查看sprint-status.yaml，确定下一个Story
+2. [我] 启动PM代理 → 创建Story的implementation文件
+3. [PM] 创建story文件，报告完成
+4. [我] 启动DEV代理 → 开发该Story
+5. [DEV] 读取Story文件，实现代码和测试
+6. [DEV] 完成开发，报告结果
+7. [我] 启动DEV代理 → 进行Code Review（可选）
+8. [DEV] 审查代码，给出反馈
+9. [我] 更新sprint-status.yaml，标记Story为review/done
+```
+
+**代码审查：**
+```
+1. [我] 确认Story已标记为完成
+2. [我] 启动DEV代理进行code-review
+3. [DEV] 审查代码，报告问题
+4. [我] 如果有问题，启动DEV代理修复
+```
+
+**查看进度：**
+```
+[我] 查询sprint-status.yaml并生成报告
+```
+
+#### 协调原则
+
+1. **不重复造轮子** - 使用BMAD已定义的workflow和智能体
+2. **保持中立** - 作为协调者，不偏向任何特定实现
+3. **透明沟通** - 明确告诉用户你正在协调哪个智能体
+4. **验证结果** - 在标记任务完成前，确认测试通过、文件已更新
+
+#### sessions_spawn使用指南
+
+使用`sessions_spawn`启动BMAD代理：
+
+```python
+# 启动PM代理创建Story
+sessions_spawn(
+    task="作为BMAD PM代理，请创建Story 2.3的implementation文件...",
+    label="Story 2.3 Creation",
+    model="zai/glm-4.7"
+)
+
+# 启动DEV代理开发Story
+sessions_spawn(
+    task="作为BMAD DEV代理，请开发Story 2.3...",
+    label="Story 2.3 Development",
+    model="zai/glm-4.7"
+)
+```
+
+#### 文件路径约定
+
+```
+项目根目录: D:\BaiduSyncdisk\4-学习\100-项目\181_CICDRedo
+
+BMAD配置: _bmad/bmm/config.yaml
+Story文件: _bmad-output/implementation-artifacts/stories/*.md
+状态文件: _bmad-output/implementation-artifacts/sprint-status.yaml
+源代码: src/
+测试: tests/unit/, tests/integration/
+```
+
+---
+
+### 在Claude Code中使用本SKILL（开发模式）
+
+如果你是开发者（非OpenClaw环境），可以直接使用以下方式：
+
 1. 阅读本文档，理解BMAD框架
 2. 根据项目规模选择规划轨道
 3. 使用本SKILL提供的Claude Code提示和工作流指导
@@ -369,11 +473,13 @@ your-project/
 
 ---
 
-**记住：** BMAD的核心是文档和上下文。良好的文档 = 良好的AI上下文 = 更好的开发结果。
+**记住：**
+- **OpenClaw环境**：你是协调者，协调BMAD智能体执行
+- **Claude Code环境**：你可以直接作为开发者使用本SKILL
+
+BMAD的核心是文档和上下文。良好的文档 = 良好的AI上下文 = 更好的开发结果。
 
 ---
-
-## OpenClaw环境中的BMAD代理交互指南
 
 在OpenClaw环境中，与BMAD智能体的交互需要采用特定的模式。作为协调者，你需要驱动不同的BMAD代理来完成工作，而不是自己直接动手。
 
@@ -384,15 +490,15 @@ your-project/
 3. **驱动代理工作** - 告诉代理要做什么，让代理去完成
 4. **等待代理反馈** - 代理完成后会告诉你结果
 
-### BMAD代理与职责
+### BMAD智能体与职责
 
-| 代理 | 命令前缀 | 主要职责 | 何时使用 |
-|------|---------|---------|---------|
-| **PM代理** | `bmad-agent-bmm-sm` | 创建PRD、分解Epic/Story、创建implementation文件 | 规划阶段、创建故事 |
-| **Architect代理** | `bmad-agent-bmm-architect` | 创建架构文档、技术决策、实施就绪检查 | 架构设计阶段 |
-| **DEV代理** | `bmad-agent-bmm-dev` | 实现Story、编写测试、代码审查 | 实现阶段 |
-| **SM代理** | `bmad-agent-bmm-sm` | Sprint规划、Story创建、流程管理 | 敏捷管理 |
-| **Analyst代理** | `bmad-agent-bmm-analyst` | 头脑风暴、市场研究、产品简介 | 分析阶段 |
+| 智能体 | 主要职责 | 何时协调 | sessions_spawn标签示例 |
+|--------|---------|---------|----------------------|
+| **PM代理** | 创建PRD、分解Epic/Story、创建implementation文件 | 规划阶段、创建Story | "Story X Creation" |
+| **Architect代理** | 创建架构文档、技术决策、实施就绪检查 | 架构设计阶段 | "Architecture Design" |
+| **DEV代理** | 实现Story、编写测试、代码审查 | 实现阶段、代码审查 | "Story X Development", "Code Review" |
+| **SM代理** | Sprint规划、Story创建、流程管理 | 敏捷管理、状态跟踪 | "Sprint Planning" |
+| **Analyst代理** | 头脑风暴、市场研究、产品简介 | 分析阶段 | "Analysis Research" |
 
 ### 典型工作流程
 
@@ -403,23 +509,27 @@ your-project/
 3. **创建Story文件** - 告诉PM代理创建implementation文件
 4. **等待完成** - PM代理会创建story文件并告诉你结果
 
-**示例提示：**
-```
-作为BMAD PM代理，请创建Story 2.3的implementation文件。
+**示例task（用于sessions_spawn）：**
+```python
+sessions_spawn(
+    task="""作为BMAD PM代理，请创建Story 2.3的implementation文件。
 
-项目目录：D:\BaiduSyncdisk\4-学习\100-项目\181_CICDRedo
+项目目录：D:\\BaiduSyncdisk\\4-学习\\100-项目\\181_CICDRedo
 
-首先读取：
-1. _bmad-output/planning-artifacts/epics.md - 找到Story 2.3的详细内容
-2. _bmad-output/planning-artifacts/architecture.md - 了解架构决策
-3. _bmad-output/planning-artifacts/prd.md - 了解需求
+工作流程：
+1. 读取 _bmad-output/planning-artifacts/epics.md - 找到Story 2.3的详细内容
+2. 读取 _bmad-output/planning-artifacts/architecture.md - 了解架构决策
+3. 读取 _bmad-output/planning-artifacts/prd.md - 了解需求
 
 然后创建implementation文件：
 1. 文件路径：_bmad-output/implementation-artifacts/stories/2-3-[slug].md
 2. 参考Story 2.1的格式
 3. 包含：Story, Acceptance Criteria, Tasks/Subtasks, Dev Notes, Dev Agent Record, File List
 
-创建完成后告诉我：创建的文件路径和主要内容。
+创建完成后报告：创建的文件路径和主要内容。""",
+    label="Story 2.3 Creation",
+    model="zai/glm-4.7"
+)
 ```
 
 #### 场景2：开发Story
@@ -429,11 +539,12 @@ your-project/
 3. **开发Story** - 告诉DEV代理实现Story
 4. **等待完成** - DEV代理会实现、写测试、报告结果
 
-**示例提示：**
-```
-作为BMAD DEV代理（Amelia - Senior Software Engineer），请开发Story 2.3。
+**示例task（用于sessions_spawn）：**
+```python
+sessions_spawn(
+    task="""作为BMAD DEV代理（Amelia - Senior Software Engineer），请开发Story 2.3。
 
-项目目录：D:\BaiduSyncdisk\4-学习\100-项目\181_CICDRedo
+项目目录：D:\\BaiduSyncdisk\\4-学习\\100-项目\\181_CICDRedo
 
 工作流程：
 1. 读取Story 2.3文件：_bmad-output/implementation-artifacts/stories/2-3-[slug].md
@@ -451,7 +562,10 @@ DEV代理原则：
 - 每个task/subtask必须有全面的单元测试覆盖
 - 严格遵循story文件中的tasks/subtasks顺序
 
-完成后请报告所有修改的文件和测试结果。
+完成后报告：所有修改的文件和测试结果。""",
+    label="Story 2.3 Development",
+    model="zai/glm-4.7"
+)
 ```
 
 ### sessions_spawn使用指南
@@ -488,30 +602,42 @@ sessions_spawn(
 - 可能任务太复杂或模型问题
 - 解决：kill会话，重新启动，简化提示
 
-### 最佳实践
+### 协调最佳实践
 
-1. **一个任务一个会话** - 每次专注于一个明确的任务
-2. **清晰的指令** - 明确告诉代理要做什么，不要让代理猜测
-3. **提供上下文** - 列出需要读取的文件、项目目录等
-4. **等待反馈** - 让代理完成后再进行下一步
-5. **验证结果** - 代理完成后检查创建的文件是否符合预期
+1. **一个任务一个会话** - 每次专注于一个明确的任务，使用sessions_spawn启动一个智能体
+2. **清晰的指令** - 明确告诉智能体要做什么，不要让智能体猜测
+3. **提供上下文** - 列出需要读取的文件、项目目录、Story ID等
+4. **等待反馈** - 让智能体完成后再进行下一步，不要并行启动多个智能体
+5. **验证结果** - 智能体完成后检查创建的文件是否符合预期
+6. **不要自己动手** - 让BMAD智能体去实现，即使看起来很简单
+7. **通过文档传递** - 智能体之间通过Story文件、PRD、Architecture等文档通信
+8. **记录决策** - 在Story文件的"Dev Agent Record"中记录技术决策
 
-### 代理间协作示例
+### 协调工作流程示例
+
+**场景：创建并开发Story 2.3**
 
 ```
-1. [我] 启动PM代理 → 创建Story 2.3
-2. [PM] 创建implementation文件
-3. [我] 启动DEV代理 → 开发Story 2.3
-4. [DEV] 读取Story 2.3文件，实现代码和测试
-5. [DEV] 完成开发，报告结果
-6. [我] 启动DEV代理 → 进行Code Review（可选）
-7. [DEV] 审查代码，给出反馈
+1. [协调者] 查看sprint-status.yaml，确定Story 2.3需要开发
+2. [协调者] 启动PM代理 → 创建Story 2.3的implementation文件
+3. [PM代理] 读取epics.md，创建story文件，报告完成
+4. [协调者] 启动DEV代理 → 开发Story 2.3
+5. [DEV代理] 读取Story 2.3文件，实现代码和测试
+6. [DEV代理] 运行所有测试，确保100%通过
+7. [DEV代理] 完成开发，报告所有修改的文件和测试结果
+8. [协调者] 验证测试通过，文件已创建
+9. [协调者] 更新sprint-status.yaml，标记Story 2.3为review
+10. [协调者] 启动DEV代理 → 进行Code Review（可选）
+11. [DEV代理] 审查代码，报告问题或批准
+12. [协调者] 标记Story 2.3为done
 ```
 
 ### 注意事项
 
-1. **不要直接修改代码** - 让DEV代理去实现
+1. **不要直接修改代码** - 让DEV代理去实现，你只是协调者
 2. **不要跳过代理** - 即使简单的代码，也让DEV代理完成
-3. **代理之间通过文档传递** - 文档是代理间的通信媒介
+3. **代理之间通过文档传递** - Story文件、PRD、Architecture是代理间的通信媒介
 4. **保持上下文一致** - 确保每个代理读取相同的上下文文件
-5. **记录决策** - 在Dev Agent Record中记录技术决策
+5. **记录决策** - 在Story文件的"Dev Agent Record"中记录技术决策
+6. **验证测试通过** - 在标记Story完成前，确保所有测试100%通过
+7. **提交并推送** - 每个Story完成后，提交代码并推送到GitHub
